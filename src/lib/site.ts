@@ -1,4 +1,14 @@
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
+/**
+ * Public site address for SEO links, the sitemap and share previews.
+ * Set NEXT_PUBLIC_SITE_URL once you have a custom domain; until then Vercel's
+ * own production address (….vercel.app) is used automatically.
+ */
+export const SITE_URL = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "") ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "") ||
+  "http://localhost:3000"
+).replace(/\/$/, "");
 
 export const NAV_LINKS = [
   { href: "/courses", label: "Courses" },
