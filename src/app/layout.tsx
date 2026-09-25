@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | Leafclutch Academy",
   },
   description:
-    "Three-month, project-based IT training in Nepal: Agentic AI, Generative AI, AI/ML, Data Science, Data Analytics, Python, MERN, Frontend, Backend, Ethical Hacking, UI/UX and Graphic Design. Online, Hybrid or Physical at the same fee.",
+    "Three-month, project-based IT training in Nepal: Agentic AI, Generative AI, AI/ML, Data Science, Data Analytics, Python, MERN, Frontend, Backend, Ethical Hacking, UI/UX and Graphic Design. Learn Online, Hybrid or Physical.",
   keywords: [
     "IT training Nepal",
     "AI course Nepal",

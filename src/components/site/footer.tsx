@@ -66,7 +66,7 @@ export function Footer({
           {categories.map((c) => (
             <FLink key={c.slug} href={`/courses?category=${c.slug}`}>{c.name}</FLink>
           ))}
-          <FLink href="/schedule">Upcoming classes</FLink>
+          <FLink href="/schedule">Upcoming courses</FLink>
         </Column>
         <Column title="Academy">
           <FLink href="/about">About us</FLink>

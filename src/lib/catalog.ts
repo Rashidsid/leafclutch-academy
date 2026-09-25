@@ -1,3 +1,4 @@
+import { hasVariablePricing, lowestPrice, type ModePrice } from "./pricing";
 import type { Course } from "./types";
 
 /** Items ranked by how many courses mention them (ties keep catalogue order). */
@@ -39,7 +40,7 @@ export const beginnerFriendly = (c: Course) => (c.level ?? "").toLowerCase().inc
 export type CourseLite = Pick<
   Course,
   "id" | "slug" | "title" | "subtitle" | "icon" | "accent" | "thumbnail_url" | "tools" | "is_ai_integrated" | "badge" | "level" | "duration" | "fee" | "category_id"
-> & { category: string | null; start_percent: number | null };
+> & { category: string | null; start_percent: number | null; price_from: ModePrice; variable_pricing: boolean };
 
 export function toLite(c: Course): CourseLite {
   return {
@@ -59,5 +60,7 @@ export function toLite(c: Course): CourseLite {
     category_id: c.category_id,
     category: c.category?.name ?? null,
     start_percent: c.installments[0]?.percent ?? null,
+    price_from: lowestPrice(c),
+    variable_pricing: hasVariablePricing(c),
   };
 }

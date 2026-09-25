@@ -64,6 +64,7 @@ const enrollmentSchema = z.object({
   phone,
   course_id: uuidOrNull,
   course_title: optional(160),
+  udemy_course: optional(300),
   mode: z.enum(["online", "hybrid", "physical"], { message: "Choose a learning mode" }),
   batch_id: uuidOrNull,
   education: optional(160),
@@ -81,7 +82,10 @@ export async function submitEnrollment(_prev: FormState, formData: FormData): Pr
   }
   if (!isSupabaseConfigured) return invalid(formData, {}, NOT_CONFIGURED_MESSAGE);
 
-  const { error } = await getPublicClient().from("enrollments").insert(parsed.data);
+  // udemy_course is only sent when chosen, so enrollments keep working before supabase/14udemy-courses.sql runs
+  const { udemy_course, ...rest } = parsed.data;
+  const row: Record<string, unknown> = udemy_course ? { ...rest, udemy_course } : rest;
+  const { error } = await getPublicClient().from("enrollments").insert(row);
   if (error) {
     console.error("[enrollment]", error.message);
     return invalid(formData, {}, "We could not send your enrollment right now. Please try again or contact us.");

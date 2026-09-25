@@ -35,6 +35,21 @@ export function rowToValues(resource: ContentResource, row: Row): Row {
     const links = (row[rel.table] as Row[] | undefined) ?? [];
     values[rel.field] = links.map((l) => String(l[rel.otherKey]));
   }
+  // Courses: per-mode pricing table (older rows only have one fee for all modes)
+  if (resource.key === "courses") {
+    const modes = (row.modes as string[] | undefined) ?? [];
+    const pricing = (row.pricing as Record<string, { price?: number; discount?: number }> | null) ?? {};
+    values.pricing = Object.fromEntries(
+      ["online", "hybrid", "physical"].map((m) => [
+        m,
+        {
+          enabled: modes.includes(m),
+          price: String(pricing[m]?.price ?? row.fee ?? ""),
+          discount: String(pricing[m]?.discount ?? 0),
+        },
+      ]),
+    );
+  }
   // numbers are edited as text in inputs
   for (const g of resource.groups) {
     for (const f of g.fields) {
@@ -54,6 +69,11 @@ export function defaultsFor(key: string): Row {
         ...base,
         duration: "3 Months",
         modes: ["online", "hybrid", "physical"],
+        pricing: {
+          online: { enabled: true, price: "", discount: "0" },
+          hybrid: { enabled: true, price: "", discount: "0" },
+          physical: { enabled: true, price: "", discount: "0" },
+        },
         installments: NEW_COURSE_INSTALLMENTS,
         includes: [],
         tools: [],
@@ -62,6 +82,7 @@ export function defaultsFor(key: string): Row {
         careers: [],
         curriculum: [],
         faqs: [],
+        udemy_courses: [],
         mentor_ids: [],
         icon: "sparkles",
         accent: "#072069",

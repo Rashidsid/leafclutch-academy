@@ -242,7 +242,7 @@ export function Header({ menu, phone }: { menu: HeaderMenu; phone: string | null
             </button>
           </div>
           <Link href="/schedule" className="hidden text-[15px] font-medium whitespace-nowrap text-slate-700 hover:text-navy xl:block">
-            Upcoming Classes
+            Upcoming Courses
           </Link>
 
           <div className="mx-auto hidden w-full max-w-xl md:block">{searchBox}</div>
@@ -312,7 +312,7 @@ export function Header({ menu, phone }: { menu: HeaderMenu; phone: string | null
             <div className="container-x">
               <p className="border-t border-line py-5 text-[15px] text-slate-700">
                 Not sure where to begin?{" "}
-                <Link href="/schedule" className="underline hover:text-navy">See upcoming classes</Link> or{" "}
+                <Link href="/schedule" className="underline hover:text-navy">See upcoming courses</Link> or{" "}
                 <Link href="/contact" className="underline hover:text-navy">talk to a counsellor</Link>
                 <span className="ml-2 rounded bg-mint px-1.5 py-0.5 text-[11px] font-extrabold text-navy-900">FREE</span>
               </p>
@@ -381,7 +381,7 @@ export function Header({ menu, phone }: { menu: HeaderMenu; phone: string | null
               {[
                 ["/", "Home"],
                 ["/courses", "All courses"],
-                ["/schedule", "Upcoming classes"],
+                ["/schedule", "Upcoming courses"],
                 ["/corporate", "For businesses & institutions"],
                 ["/mentors", "Mentors"],
                 ["/about", "About us"],

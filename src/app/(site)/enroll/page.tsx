@@ -5,6 +5,7 @@ import { PageHero } from "@/components/site/sections";
 import { WhatsappIcon } from "@/components/ui/brand-icons";
 import { getBatches, getCourses, getSettings } from "@/lib/data";
 import { whatsappLink } from "@/lib/format";
+import { modePrices } from "@/lib/pricing";
 import type { LearningMode } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -38,7 +39,9 @@ export default async function EnrollPage({ searchParams }: { searchParams: Searc
               title: c.title,
               fee: c.fee,
               modes: c.modes,
+              prices: modePrices(c),
               installments: c.installments,
+              udemy: c.udemy_courses.map((u) => ({ title: u.title, url: u.url, image: u.image })),
             }))}
             batches={batches.map((b) => ({
               id: b.id,

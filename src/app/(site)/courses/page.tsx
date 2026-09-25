@@ -10,7 +10,7 @@ import { getCategories, getCourses, getSettings, getTestimonials, ratingsByCours
 export const metadata: Metadata = {
   title: "All Courses",
   description:
-    "Browse 3-month IT training programs in AI, data, programming, web development, cyber security and design. Online, Hybrid or Physical at the same fee.",
+    "Browse 3-month IT training programs in AI, data, programming, web development, cyber security and design. Learn Online, Hybrid or Physical.",
   alternates: { canonical: "/courses" },
 };
 
@@ -114,7 +114,7 @@ export default async function CoursesPage({ searchParams }: { searchParams: Sear
         </div>
 
         <p className="mt-6 mb-5 text-sm text-muted">
-          {list.length} {list.length === 1 ? "result" : "results"} · Every program is available Online, Hybrid or Physical at the same fee
+          {list.length} {list.length === 1 ? "result" : "results"} · Choose Online, Hybrid or Physical classes
         </p>
 
         {list.length ? (

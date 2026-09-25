@@ -12,7 +12,7 @@ export const SITE_URL = (
 
 export const NAV_LINKS = [
   { href: "/courses", label: "Courses" },
-  { href: "/schedule", label: "Upcoming Classes" },
+  { href: "/schedule", label: "Upcoming Courses" },
   { href: "/corporate", label: "Corporate" },
   { href: "/mentors", label: "Mentors" },
   { href: "/about", label: "About" },

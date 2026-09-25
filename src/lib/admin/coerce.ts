@@ -61,6 +61,49 @@ function coerceField(field: Field, raw: unknown, values: Values): unknown {
       if (items.length && Math.round(total) !== 100) throw new Error(`Payment plan percentages add up to ${total}%. They must total 100%.`);
       return items;
     }
+    case "pricing": {
+      const input = (raw && typeof raw === "object" ? raw : {}) as Record<string, Values>;
+      const out: Record<string, { price: number; discount: number }> = {};
+      for (const mode of ["online", "hybrid", "physical"]) {
+        const m = input[mode];
+        if (!m || !(m.enabled === true || m.enabled === "true")) continue;
+        const label = mode[0]!.toUpperCase() + mode.slice(1);
+        const price = Number(str(m.price).replace(/,/g, ""));
+        const discount = str(m.discount) ? Number(str(m.discount)) : 0;
+        if (!Number.isFinite(price) || price <= 0) throw new Error(`Enter a price for ${label}.`);
+        if (!Number.isFinite(discount) || discount < 0 || discount > 100) throw new Error(`${label} discount must be between 0 and 100%.`);
+        out[mode] = { price: Math.round(price), discount: Math.round(discount * 100) / 100 };
+      }
+      if (!Object.keys(out).length) throw new Error("Offer at least one learning mode.");
+      return out;
+    }
+    case "udemy":
+      return (Array.isArray(raw) ? raw : [])
+        .map((u) => {
+          const item = u as Values;
+          const num = (v: unknown) => {
+            const n = Number(str(v).replace(/,/g, ""));
+            return str(v) && Number.isFinite(n) ? n : null;
+          };
+          return {
+            url: str(item?.url),
+            title: str(item?.title),
+            headline: str(item?.headline) || null,
+            image: str(item?.image) || null,
+            instructor: str(item?.instructor) || null,
+            rating: num(item?.rating),
+            ratings_count: num(item?.ratings_count),
+            hours: num(item?.hours),
+            lectures: num(item?.lectures),
+            level: str(item?.level) || null,
+          };
+        })
+        .filter((u) => {
+          if (!u.url && !u.title) return false;
+          if (!/^https:\/\/(www\.)?udemy\.com\/course\//i.test(u.url)) throw new Error(`“${u.title || u.url}” needs a valid Udemy course link (https://www.udemy.com/course/…).`);
+          if (!u.title) throw new Error("Every Udemy course needs a title.");
+          return true;
+        });
     case "stats":
       return (Array.isArray(raw) ? raw : [])
         .map((s) => ({ value: str((s as Values)?.value), label: str((s as Values)?.label) }))

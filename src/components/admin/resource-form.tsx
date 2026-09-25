@@ -15,6 +15,8 @@ import {
   InstallmentsField,
   ListField,
   StatsField,
+  UdemyField,
+  PricingField,
 } from "./fields";
 import { cn } from "@/lib/cn";
 import { slugify } from "@/lib/format";
@@ -115,8 +117,17 @@ export function ResourceForm({
   );
 }
 
+/** Amount used to preview installments: the cheapest enabled mode, else the stored fee. */
+function previewFee(values: Values) {
+  const pricing = values.pricing as Record<string, { enabled?: boolean; price?: string; discount?: string }> | undefined;
+  const finals = Object.values(pricing ?? {})
+    .filter((p) => p?.enabled && Number(p.price) > 0)
+    .map((p) => Math.round((Number(p.price) * (100 - (Number(p.discount) || 0))) / 100));
+  return finals.length ? Math.min(...finals) : Number(values.fee) || 0;
+}
+
 function isWideType(field: Field) {
-  return ["curriculum", "faqs", "installments", "stats", "relation", "list"].includes(field.type);
+  return ["curriculum", "faqs", "installments", "stats", "relation", "list", "udemy", "pricing"].includes(field.type);
 }
 
 function FieldControl({
@@ -260,9 +271,18 @@ function FieldControl({
       return (
         <div>
           <p className="label">{field.label}</p>
-          <InstallmentsField value={(raw as never) ?? []} onChange={(v) => set(field.name, v)} fee={Number(values.fee) || 0} />
+          <InstallmentsField value={(raw as never) ?? []} onChange={(v) => set(field.name, v)} fee={previewFee(values)} />
         </div>
       );
+    case "pricing":
+      return (
+        <div>
+          <p className="label">{field.label}</p>
+          <PricingField value={raw as never} onChange={(v) => set(field.name, v)} />
+        </div>
+      );
+    case "udemy":
+      return <UdemyField value={(raw as never) ?? []} onChange={(v) => set(field.name, v)} />;
     case "stats":
       return <StatsField value={(raw as never) ?? []} onChange={(v) => set(field.name, v)} />;
     default:

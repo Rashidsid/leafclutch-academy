@@ -2,6 +2,7 @@ import { PDFDocument, rgb, StandardFonts, type PDFFont, type PDFImage, type PDFP
 import { lessonSections } from "@/lib/curriculum";
 import { getCourseBySlug, getSettings } from "@/lib/data";
 import { formatNpr, MODE_LABELS } from "@/lib/format";
+import { hasVariablePricing, lowestPrice, modePrices } from "@/lib/pricing";
 
 /**
  * GET /courses/<slug>/syllabus — a branded PDF of the course curriculum,
@@ -115,7 +116,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
   const facts = [
     ["Duration", course.duration],
     ["Level", course.level ?? "All levels"],
-    ["Total fee", formatNpr(course.fee)],
+    [hasVariablePricing(course) ? "Fee from" : "Total fee", formatNpr(lowestPrice(course).final)],
     ["Learning modes", course.modes.map((m) => MODE_LABELS[m]).join(", ")],
   ];
   const cellW = width / facts.length;
@@ -128,9 +129,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
       .forEach((line, n) => page.drawText(line, { x, y: y - 33 - n * 12, size: 10, font: bold, color: NAVY }));
   });
   y -= 72;
+  text(
+    `Fees by class type: ${modePrices(course)
+      .map((p) => `${MODE_LABELS[p.mode]} ${formatNpr(p.final)}${p.discount > 0 ? ` (${p.discount}% off ${formatNpr(p.price)})` : ""}`)
+      .join("  |  ")}`,
+    { size: 9.5, font: bold, color: NAVY, gap: 2 },
+  );
   if (firstInstallment) {
     text(
-      `Payment plan: ${course.installments.map((i) => `${i.label} ${i.percent}% (${formatNpr(Math.round((course.fee * i.percent) / 100))}) - ${i.note}`).join("; ")}.`,
+      `Payment plan: ${course.installments.map((i) => `${i.label} ${i.percent}% - ${i.note}`).join("; ")}.`,
       { size: 9, color: MUTED, gap: 8 },
     );
   }

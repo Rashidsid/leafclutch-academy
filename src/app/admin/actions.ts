@@ -6,6 +6,8 @@ import { buildPayload } from "@/lib/admin/coerce";
 import { NotAdminError, requireAdmin } from "@/lib/admin/auth";
 import { getContentResource, getResource, settingsGroups } from "@/lib/admin/resources";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { lowestPrice, MODE_ORDER } from "@/lib/pricing";
+import type { CoursePricing, LearningMode } from "@/lib/types";
 
 export interface ActionResult {
   ok: boolean;
@@ -65,6 +67,13 @@ export async function saveResource(key: string, id: string | null, values: Recor
     if (!resource) return { ok: false, error: "Unknown section." };
 
     const row = buildPayload(resource.groups, values);
+
+    // Courses: the modes offered and the "from" fee are derived from the per-mode pricing
+    if (resource.key === "courses" && row.pricing) {
+      const pricing = row.pricing as CoursePricing;
+      row.modes = MODE_ORDER.filter((m) => pricing[m]);
+      row.fee = lowestPrice({ fee: 0, modes: row.modes as LearningMode[], pricing }).final;
+    }
 
     // Certificates: default the printed course title to the selected course
     if (resource.key === "certificates" && !row.course_title && row.course_id) {
@@ -174,6 +183,25 @@ export async function saveSettings(values: Record<string, unknown>): Promise<Act
     if (error) return { ok: false, error: friendlyError(error) };
     refreshSite();
     return { ok: true };
+  } catch (error) {
+    return { ok: false, error: friendlyError(error) };
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Udemy                                                               */
+/* ------------------------------------------------------------------ */
+
+export async function fetchUdemyDetails(
+  url: string,
+): Promise<{ ok: true; course: import("@/lib/types").UdemyCourse } | { ok: false; error: string }> {
+  try {
+    await requireAdmin();
+    const { fetchUdemyCourse, normalizeUdemyUrl } = await import("@/lib/udemy");
+    if (!normalizeUdemyUrl(url)) return { ok: false, error: "Paste a Udemy course link like https://www.udemy.com/course/web-dev-master/" };
+    const course = await fetchUdemyCourse(url);
+    if (!course) return { ok: false, error: "Udemy did not return the course details. Fill in the fields manually." };
+    return { ok: true, course };
   } catch (error) {
     return { ok: false, error: friendlyError(error) };
   }

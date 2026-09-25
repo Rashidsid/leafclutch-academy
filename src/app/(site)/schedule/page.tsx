@@ -3,28 +3,30 @@ import Link from "next/link";
 import { CalendarDays, CalendarX, Clock, Users } from "lucide-react";
 import { CtaBand, PageHero } from "@/components/site/sections";
 import { buttonClass } from "@/components/ui/button";
-import { getBatches, getSettings } from "@/lib/data";
+import { getBatches, getCourses, getSettings } from "@/lib/data";
+import { priceFor } from "@/lib/pricing";
 import { BATCH_STATUS, formatDate, formatNpr, MODE_LABELS } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Upcoming Classes",
+  title: "Upcoming Courses",
   description: "Upcoming batches at Leafclutch Academy. Find start dates, timings and learning modes for every course.",
   alternates: { canonical: "/schedule" },
 };
 
 export default async function SchedulePage() {
-  const [settings, batches] = await Promise.all([getSettings(), getBatches()]);
+  const [settings, batches, courses] = await Promise.all([getSettings(), getBatches(), getCourses()]);
+  const courseById = new Map(courses.map((c) => [c.id, c]));
 
   return (
     <>
       <PageHero
         eyebrow="Schedule"
-        title="Upcoming classes"
+        title="Upcoming courses"
         description="New batches start regularly in Online, Hybrid and Physical modes. Reserve your seat early, because batches are kept small."
-        breadcrumb={[{ href: "/schedule", label: "Upcoming Classes" }]}
+        breadcrumb={[{ href: "/schedule", label: "Upcoming Courses" }]}
       />
       <section className="container-x py-12 sm:py-16">
         {batches.length ? (
@@ -70,7 +72,17 @@ export default async function SchedulePage() {
                     </li>
                   </ul>
                   <div className="mt-auto flex items-center justify-between gap-3 border-t border-line pt-4">
-                    {b.course && <span className="font-extrabold text-navy">{formatNpr(b.course.fee)}</span>}
+                    {(() => {
+                      const course = courseById.get(b.course_id);
+                      if (!course) return b.course ? <span className="font-extrabold text-navy">{formatNpr(b.course.fee)}</span> : null;
+                      const p = priceFor(course, b.mode);
+                      return (
+                        <span className="font-extrabold text-navy">
+                          {formatNpr(p.final)}
+                          {p.discount > 0 && <s className="ml-1.5 text-xs font-medium text-muted">{formatNpr(p.price)}</s>}
+                        </span>
+                      );
+                    })()}
                     {b.status !== "full" && b.course && (
                       <Link
                         href={`/enroll?course=${b.course.slug}&mode=${b.mode}&batch=${b.id}`}

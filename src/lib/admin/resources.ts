@@ -24,6 +24,8 @@ export type FieldType =
   | "faqs"
   | "installments"
   | "stats"
+  | "udemy"
+  | "pricing"
   | "relation";
 
 export interface Option {
@@ -141,7 +143,7 @@ const courses: ContentResource = {
     { name: "thumbnail_url", label: "", kind: "image" },
     { name: "title", label: "Course" },
     { name: "category.name", label: "Category", kind: "badge" },
-    { name: "fee", label: "Fee", kind: "money" },
+    { name: "fee", label: "From", kind: "money" },
     { name: "is_featured", label: "Featured", kind: "bool" },
     { name: "is_published", label: "Published", kind: "bool" },
   ],
@@ -171,12 +173,11 @@ const courses: ContentResource = {
       ],
     },
     {
-      title: "Fee & learning modes",
-      description: "The same fee applies to every learning mode.",
+      title: "Pricing & learning modes",
+      description: "Tick the modes this course is offered in and set a price and optional discount for each. Learners get the same content in every mode. Requires supabase/15mode-pricing.sql.",
       fields: [
-        { name: "fee", label: "Total fee (NPR)", type: "number", required: true },
-        { name: "modes", label: "Learning modes offered", type: "modes", options: MODE_OPTIONS },
-        { name: "installments", label: "Payment plan", type: "installments", wide: true },
+        { name: "pricing", label: "Price by learning mode", type: "pricing", wide: true },
+        { name: "installments", label: "Payment plan (percent of the chosen mode’s price)", type: "installments", wide: true },
       ],
     },
     {
@@ -191,6 +192,11 @@ const courses: ContentResource = {
       ],
     },
     { title: "Curriculum", fields: [{ name: "curriculum", label: "Modules", type: "curriculum", wide: true }] },
+    {
+      title: "Free Udemy courses (lifetime access)",
+      description: "Udemy courses learners can choose for free when they enroll. Shown under “What you get” with an Explore button. Requires supabase/14udemy-courses.sql.",
+      fields: [{ name: "udemy_courses", label: "Udemy courses", type: "udemy", wide: true }],
+    },
     { title: "Course FAQs", fields: [{ name: "faqs", label: "Questions", type: "faqs", wide: true }] },
     { title: "Mentors", fields: [{ name: "mentor_ids", label: "Mentors teaching this course", type: "relation", optionsFrom: "mentors", wide: true }] },
     {
@@ -278,7 +284,7 @@ const batches: ContentResource = {
   table: "batches",
   label: "Batches",
   singular: "Batch",
-  description: "Upcoming class schedules shown on course pages and Upcoming Classes.",
+  description: "Upcoming class schedules shown on course pages and Upcoming Courses.",
   icon: "calendar-days",
   select: "*, course:courses(title)",
   order: [{ column: "start_date", ascending: false }],
@@ -556,6 +562,7 @@ const enrollments: InboxResource = {
     { name: "batch.start_date", label: "Preferred batch", kind: "date" },
     { name: "phone", label: "Phone", kind: "phone" },
     { name: "email", label: "Email", kind: "email" },
+    { name: "udemy_course", label: "Free Udemy course" },
     { name: "education", label: "Education / job" },
     { name: "message", label: "Message" },
   ],

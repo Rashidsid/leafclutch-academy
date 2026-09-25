@@ -86,9 +86,9 @@ export default async function HomePage() {
       id: "modes",
       theme: "mint",
       art: "modes",
-      title: "Online, Hybrid or Physical. Same fee.",
+      title: "Online, Hybrid or Physical. Your choice.",
       text: "Learn the way that suits you, with a recording of every class.",
-      cta: { href: "/schedule", label: "See upcoming classes" },
+      cta: { href: "/schedule", label: "See upcoming courses" },
     },
   ];
 
@@ -218,12 +218,12 @@ export default async function HomePage() {
           <div className="animate-drift absolute -right-14 -bottom-20 size-72 rounded-full bg-navy-700" aria-hidden />
           <div className="absolute -right-4 -bottom-6 size-48 rounded-full border-[26px] border-navy-900/60" aria-hidden />
           <Wallet className="absolute right-12 bottom-12 hidden size-16 text-sky sm:block" aria-hidden />
-          <p className="relative text-sm font-extrabold tracking-wider text-mint uppercase">One fee · every mode</p>
+          <p className="relative text-sm font-extrabold tracking-wider text-mint uppercase">Flexible payment</p>
           <h2 className="relative mt-2 max-w-sm text-2xl leading-tight font-bold sm:text-[28px]">
             Start with just 50%. Pay the rest when you are promoted to the internship.
           </h2>
           <ul className="relative mt-5 space-y-2 text-[15px] text-white/85">
-            {["Online, Hybrid or Physical at the same price", "Recorded video of every session", "Verifiable completion certificate"].map((t) => (
+            {["Choose Online, Hybrid or Physical classes", "Recorded video of every session", "Verifiable completion certificate"].map((t) => (
               <li key={t} className="flex gap-2">
                 <CircleCheck className="mt-0.5 size-4 shrink-0 text-mint" aria-hidden /> {t}
               </li>

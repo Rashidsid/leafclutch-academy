@@ -10,8 +10,8 @@ import {
   CircleCheck,
   Clock,
   Download,
+  Gift,
   Laptop,
-  ShieldCheck,
   Sparkles,
   Star,
   Target,
@@ -21,15 +21,16 @@ import { CertificateSample } from "@/components/site/certificate-sample";
 import { CourseCard } from "@/components/site/course-card";
 import { CourseCover } from "@/components/site/course-cover";
 import { Curriculum } from "@/components/site/curriculum";
-import { CtaBand, FaqList, IncludesGrid, ModeCards } from "@/components/site/sections";
+import { CtaBand, FaqList, IncludesGrid } from "@/components/site/sections";
+import { ModePriceCard } from "@/components/site/mode-price-card";
 import { TestimonialCarousel } from "@/components/site/testimonial-carousel";
-import { buttonClass } from "@/components/ui/button";
-import { WhatsappIcon } from "@/components/ui/brand-icons";
+import { UdemyOfferCard, UdemySection } from "@/components/site/udemy-offer";
 import { Reveal } from "@/components/ui/motion";
 import { toLite } from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import { getBatches, getCourseBySlug, getCourses, getSettings, getTestimonials, ratingsByCourse } from "@/lib/data";
-import { BATCH_STATUS, formatDate, formatNpr, initials, MODE_LABELS, whatsappLink } from "@/lib/format";
+import { BATCH_STATUS, formatDate, formatNpr, initials, MODE_DETAILS, MODE_LABELS } from "@/lib/format";
+import { hasVariablePricing, lowestPrice, modePrices } from "@/lib/pricing";
 import { SITE_URL } from "@/lib/site";
 
 export const revalidate = 300;
@@ -48,7 +49,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const title = course.seo_title || `${course.title} Training in Nepal`;
   const description =
     course.seo_description ||
-    `${course.subtitle ?? ""} ${course.duration}, ${formatNpr(course.fee)}. Online, Hybrid or Physical at Leafclutch Academy.`.trim();
+    `${course.subtitle ?? ""} ${course.duration}, from ${formatNpr(lowestPrice(course).final)}. Online, Hybrid or Physical at Leafclutch Academy.`.trim();
   return {
     title,
     description,
@@ -89,9 +90,11 @@ export default async function CoursePage({ params }: { params: Params }) {
     ...allCourses.filter((c) => c.id !== course.id && c.category_id === course.category_id),
     ...allCourses.filter((c) => c.id !== course.id && c.category_id !== course.category_id),
   ].slice(0, 4);
+  const prices = modePrices(course);
+  const from = lowestPrice(course);
+  const variable = hasVariablePricing(course);
   const firstInstallment = course.installments[0];
-  const startAmount = firstInstallment ? Math.round((course.fee * firstInstallment.percent) / 100) : null;
-  const wa = whatsappLink(settings.whatsapp, `Hi Leafclutch Academy, I am interested in the ${course.title} course.`);
+  const startAmount = firstInstallment ? Math.round((from.final * firstInstallment.percent) / 100) : null;
   const paragraphs = (course.description ?? "").split(/\n\s*\n/).filter(Boolean);
   const pdfHref = `/courses/${course.slug}/syllabus`;
   const modes = course.modes.map((m) => MODE_LABELS[m]);
@@ -105,7 +108,7 @@ export default async function CoursePage({ params }: { params: Params }) {
     description: course.subtitle ?? course.description ?? undefined,
     url: `${SITE_URL}/courses/${course.slug}`,
     provider: { "@type": "Organization", name: settings.site_name, sameAs: "https://leafclutch.com.np" },
-    offers: { "@type": "Offer", price: course.fee, priceCurrency: "NPR", category: "Paid" },
+    offers: prices.map((p) => ({ "@type": "Offer", name: MODE_LABELS[p.mode], price: p.final, priceCurrency: "NPR", category: "Paid" })),
     hasCourseInstance: course.modes.map((m) => ({
       "@type": "CourseInstance",
       courseMode: m === "physical" ? "Onsite" : m === "online" ? "Online" : "Blended",
@@ -161,6 +164,12 @@ export default async function CoursePage({ params }: { params: Params }) {
                   {course.badge}
                 </span>
               )}
+              <a
+                href={course.udemy_courses.length ? "#udemy" : `/enroll?course=${course.slug}`}
+                className="inline-flex animate-pulse items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-extrabold tracking-wide text-navy uppercase [animation-duration:2.5s] hover:animate-none"
+              >
+                <Gift className="size-3.5 text-sky" aria-hidden /> Includes a free Udemy course
+              </a>
             </div>
 
             <h1 className="mt-4 text-balance text-3xl leading-tight font-bold tracking-tight sm:text-5xl sm:leading-[1.12]">
@@ -230,8 +239,14 @@ export default async function CoursePage({ params }: { params: Params }) {
               <CourseCover course={course} size="hero" />
             </div>
             <div className="animate-float absolute -bottom-5 left-4 rounded-2xl bg-white px-4 py-3 text-navy shadow-lift sm:left-8">
-              <p className="text-[11px] font-bold tracking-wider text-muted uppercase">Total fee</p>
-              <p className="text-xl font-extrabold">{formatNpr(course.fee)}</p>
+              <p className="text-[11px] font-bold tracking-wider text-muted uppercase">{variable ? "Fee from" : "Total fee"}</p>
+              <p className="text-xl font-extrabold">
+                {formatNpr(from.final)}
+                {from.discount > 0 && <s className="ml-2 text-sm font-semibold text-muted">{formatNpr(from.price)}</s>}
+              </p>
+              {from.discount > 0 && (
+                <span className="mt-1 inline-block rounded bg-emerald-600 px-1.5 text-[11px] font-extrabold text-white">{from.discount}% OFF</span>
+              )}
             </div>
             {startAmount !== null && (
               <div className="animate-float absolute -top-4 right-4 rounded-2xl bg-mint px-4 py-2.5 text-navy-900 shadow-lift [animation-delay:1.5s] sm:right-8">
@@ -337,45 +352,95 @@ export default async function CoursePage({ params }: { params: Params }) {
             </section>
           )}
 
-          {course.includes.length > 0 && (
-            <Reveal>
-              <section>
-                <H2 className="mb-6">What you get</H2>
-                <IncludesGrid items={course.includes} />
-              </section>
-            </Reveal>
+          {(course.includes.length > 0 || course.udemy_courses.length > 0) && (
+            <section className="space-y-6">
+              <H2>What you get</H2>
+              {course.includes.length > 0 && (
+                <Reveal>
+                  <IncludesGrid items={course.includes} />
+                </Reveal>
+              )}
+              <UdemySection courses={course.udemy_courses} courseTitle={course.title} />
+            </section>
           )}
 
           {/* Fees & modes */}
           <section id="fees" className="scroll-mt-36">
             <H2>Fees & payment plan</H2>
-            <Reveal className="mt-6 overflow-hidden rounded-2xl border border-line">
-              <div className="flex flex-wrap items-center justify-between gap-4 bg-navy px-6 py-5 text-white">
-                <div>
-                  <p className="text-sm text-white/70">Total fee · {course.duration}</p>
-                  <p className="text-3xl font-extrabold">{formatNpr(course.fee)}</p>
-                </div>
-                <span className="rounded-full bg-mint px-3 py-1 text-xs font-extrabold text-navy-900">One fee for every learning mode</span>
-              </div>
-              <ol className="divide-y divide-line bg-white">
-                {course.installments.map((ins, i) => (
-                  <li key={ins.label} className="flex items-center gap-4 px-6 py-4">
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-tint text-sm font-extrabold text-navy">
-                      {i + 1}
+            <p className="mt-2 text-[15px] text-slate-600">
+              {course.duration} program. Choose the class type that suits you. The curriculum, mentors, recordings and certificate
+              are the same in every mode.
+            </p>
+
+            {/* Price per learning mode */}
+            <div className={cn("mt-6 grid gap-4", prices.length >= 3 ? "sm:grid-cols-3" : prices.length === 2 ? "sm:grid-cols-2" : "")}>
+              {prices.map((p, i) => (
+                <Reveal
+                  key={p.mode}
+                  delay={i * 100}
+                  className="relative overflow-hidden rounded-2xl border border-line bg-white p-5 transition duration-300 hover:-translate-y-1 hover:border-navy/30 hover:shadow-lift"
+                >
+                  {p.discount > 0 && (
+                    <span className="absolute top-4 right-4 rounded-md bg-emerald-600 px-2 py-0.5 text-xs font-extrabold text-white">
+                      {p.discount}% OFF
                     </span>
-                    <div className="flex-1">
-                      <p className="font-bold text-ink">
-                        {ins.label} <span className="font-medium text-muted">({ins.percent}%)</span>
-                      </p>
-                      <p className="text-sm text-muted">{ins.note}</p>
-                    </div>
-                    <p className="text-lg font-extrabold whitespace-nowrap text-navy">{formatNpr(Math.round((course.fee * ins.percent) / 100))}</p>
-                  </li>
-                ))}
-              </ol>
-            </Reveal>
-            <h3 className="mt-10 mb-4 text-lg font-bold">Choose how you learn</h3>
-            <ModeCards modes={course.modes} compact />
+                  )}
+                  <p className="text-sm font-bold tracking-wider text-navy uppercase">{MODE_LABELS[p.mode]}</p>
+                  <p className="mt-1 text-xs text-muted">{MODE_DETAILS[p.mode].summary}</p>
+                  <p className="mt-4 text-2xl font-extrabold text-ink">{formatNpr(p.final)}</p>
+                  {p.discount > 0 && <s className="text-sm text-muted">{formatNpr(p.price)}</s>}
+                  <Link
+                    href={`/enroll?course=${course.slug}&mode=${p.mode}`}
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-navy hover:underline"
+                  >
+                    Enroll {MODE_LABELS[p.mode].toLowerCase()} <ArrowRight className="size-4" aria-hidden />
+                  </Link>
+                </Reveal>
+              ))}
+            </div>
+
+            {/* Installments per mode */}
+            {course.installments.length > 0 && (
+              <Reveal className="mt-6 overflow-x-auto rounded-2xl border border-line">
+                <table className="w-full min-w-130 text-left text-sm">
+                  <thead className="bg-navy text-white">
+                    <tr>
+                      <th className="px-5 py-3.5 font-bold">Payment plan</th>
+                      {prices.map((p) => (
+                        <th key={p.mode} className="px-5 py-3.5 text-right font-bold">
+                          {MODE_LABELS[p.mode]}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-line bg-white">
+                    {course.installments.map((ins) => (
+                      <tr key={ins.label}>
+                        <td className="px-5 py-4">
+                          <p className="font-bold text-ink">
+                            {ins.label} <span className="font-medium text-muted">({ins.percent}%)</span>
+                          </p>
+                          <p className="text-xs text-muted">{ins.note}</p>
+                        </td>
+                        {prices.map((p) => (
+                          <td key={p.mode} className="px-5 py-4 text-right font-extrabold whitespace-nowrap text-navy">
+                            {formatNpr(Math.round((p.final * ins.percent) / 100))}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                    <tr className="bg-surface">
+                      <td className="px-5 py-3.5 font-bold text-ink">Total</td>
+                      {prices.map((p) => (
+                        <td key={p.mode} className="px-5 py-3.5 text-right font-extrabold whitespace-nowrap text-ink">
+                          {formatNpr(p.final)}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </Reveal>
+            )}
           </section>
 
           {courseBatches.length > 0 && (
@@ -487,44 +552,9 @@ export default async function CoursePage({ params }: { params: Params }) {
 
         {/* ------------------------------------------------------------ Sidebar */}
         <aside className="space-y-5 lg:sticky lg:top-36 lg:self-start">
-          <div className="rounded-2xl border border-line bg-white p-5 shadow-card">
-            <p className="text-sm font-medium text-muted">Total course fee</p>
-            <p className="text-3xl font-extrabold text-navy">{formatNpr(course.fee)}</p>
-            {startAmount !== null && (
-              <p className="mt-1 text-sm text-slate-600">
-                Start with <strong className="text-ink">{formatNpr(startAmount)}</strong> ({firstInstallment!.percent}% at enrollment)
-              </p>
-            )}
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-              <ShieldCheck className="size-3.5" aria-hidden /> Same fee for {modeText}
-            </p>
-            <Link href={`/enroll?course=${course.slug}`} className={buttonClass("primary", "lg", "mt-5 w-full")}>
-              Enroll now <ArrowRight className="size-4" aria-hidden />
-            </Link>
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              {wa && (
-                <a href={wa} target="_blank" rel="noopener noreferrer" className={buttonClass("outline", "md", "w-full px-2")}>
-                  <WhatsappIcon className="size-4 text-whatsapp" /> WhatsApp
-                </a>
-              )}
-              <a href={pdfHref} download className={buttonClass("outline", "md", cn("w-full px-2", !wa && "col-span-2"))}>
-                <Download className="size-4" aria-hidden /> Syllabus
-              </a>
-            </div>
-          </div>
+          <ModePriceCard prices={prices} installments={course.installments} courseSlug={course.slug} />
 
-          {course.includes.length > 0 && (
-            <div className="rounded-2xl bg-tint p-5 sm:p-6">
-              <h2 className="text-lg font-bold text-ink">Why {course.title}?</h2>
-              <ul className="mt-4 space-y-3">
-                {course.includes.map((i) => (
-                  <li key={i} className="flex gap-2.5 text-sm leading-6 text-slate-700">
-                    <CircleCheck className="mt-0.5 size-4.5 shrink-0 text-navy" aria-hidden /> {i}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <UdemyOfferCard courseTitle={course.title} courseSlug={course.slug} count={course.udemy_courses.length} />
         </aside>
       </div>
 

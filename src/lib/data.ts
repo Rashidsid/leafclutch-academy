@@ -49,6 +49,10 @@ function normalizeCourse(row: Row): Course {
     curriculum: (row.curriculum as Course["curriculum"]) ?? [],
     faqs: (row.faqs as Course["faqs"]) ?? [],
     installments: (row.installments as Course["installments"]) ?? [],
+    // Column added by supabase/15mode-pricing.sql; empty until that file has run
+    pricing: row.pricing && typeof row.pricing === "object" && !Array.isArray(row.pricing) ? (row.pricing as Course["pricing"]) : {},
+    // Column added by supabase/14udemy-courses.sql; empty until that file has run
+    udemy_courses: Array.isArray(row.udemy_courses) ? (row.udemy_courses as Course["udemy_courses"]) : [],
     mentors,
   };
 }

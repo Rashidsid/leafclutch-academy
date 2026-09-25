@@ -1,14 +1,16 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { ArrowDown, ArrowUp, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
+import { ArrowDown, ArrowUp, DownloadCloud, ImagePlus, LoaderCircle, Plus, Trash2, X } from "lucide-react";
+import { fetchUdemyDetails } from "@/app/admin/actions";
+import { UdemyCard } from "@/components/site/udemy-card";
 import { ICONS } from "@/lib/icons";
 import { cn } from "@/lib/cn";
 import { MEDIA_BUCKET } from "@/lib/supabase/config";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import type { Option } from "@/lib/admin/resources";
 import { curriculumStats, lessonSections, parseOutline, toOutline } from "@/lib/curriculum";
-import type { CurriculumModule, CurriculumSection, FaqItem, Installment, Stat } from "@/lib/types";
+import type { CurriculumModule, CurriculumSection, FaqItem, Installment, Stat, UdemyCourse } from "@/lib/types";
 
 /* ------------------------------------------------------------------ */
 /* Small shared bits                                                   */
@@ -548,6 +550,231 @@ export function ImageField({
           {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Udemy courses                                                       */
+/* ------------------------------------------------------------------ */
+
+const EMPTY_UDEMY: UdemyCourse = {
+  url: "",
+  title: "",
+  headline: null,
+  image: null,
+  instructor: null,
+  rating: null,
+  ratings_count: null,
+  hours: null,
+  lectures: null,
+  level: null,
+};
+
+function UdemyItem({
+  item,
+  index,
+  total,
+  onChange,
+  onMove,
+  onRemove,
+}: {
+  item: UdemyCourse;
+  index: number;
+  total: number;
+  onChange: (v: UdemyCourse) => void;
+  onMove: (to: number) => void;
+  onRemove: () => void;
+}) {
+  const [pending, start] = useTransition();
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const set = (patch: Partial<UdemyCourse>) => onChange({ ...item, ...patch });
+  const text = (v: unknown) => (v == null ? "" : String(v));
+
+  const fetchDetails = () =>
+    start(async () => {
+      setMessage(null);
+      const res = await fetchUdemyDetails(item.url);
+      if (res.ok) {
+        onChange(res.course);
+        setMessage({ ok: true, text: "Details fetched from Udemy. Check them, then save the course." });
+      } else setMessage({ ok: false, text: res.error });
+    });
+
+  const input = (key: keyof UdemyCourse, label: string, placeholder?: string) => (
+    <label className="block">
+      <span className="mb-1 block text-xs font-semibold text-slate-600">{label}</span>
+      <input className="field" value={text(item[key])} placeholder={placeholder} onChange={(e) => set({ [key]: e.target.value } as Partial<UdemyCourse>)} />
+    </label>
+  );
+
+  return (
+    <div className="rounded-xl border border-line bg-surface p-4">
+      <div className="flex items-center gap-2">
+        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-navy text-xs font-bold text-white">{index + 1}</span>
+        <input
+          className="field"
+          placeholder="https://www.udemy.com/course/…"
+          value={item.url}
+          onChange={(e) => set({ url: e.target.value })}
+          aria-label={`Udemy course ${index + 1} link`}
+        />
+        <button
+          type="button"
+          onClick={fetchDetails}
+          disabled={pending || !item.url.trim()}
+          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-lg bg-navy px-3 text-sm font-bold text-white hover:bg-navy-700 disabled:opacity-50"
+        >
+          {pending ? <LoaderCircle className="size-4 animate-spin" aria-hidden /> : <DownloadCloud className="size-4" aria-hidden />}
+          <span className="hidden sm:inline">Fetch details</span>
+        </button>
+        <RowTools index={index} total={total} onMove={onMove} onRemove={onRemove} />
+      </div>
+      {message && <p className={cn("mt-2 text-xs font-medium", message.ok ? "text-emerald-700" : "text-rose-600")}>{message.text}</p>}
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_280px]">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="sm:col-span-2">{input("title", "Title *", "Complete web development course")}</div>
+          <label className="block sm:col-span-2">
+            <span className="mb-1 block text-xs font-semibold text-slate-600">Short description</span>
+            <textarea className="field" rows={2} value={text(item.headline)} onChange={(e) => set({ headline: e.target.value })} />
+          </label>
+          <div className="sm:col-span-2">{input("image", "Image URL", "https://img-c.udemycdn.com/course/480x270/…jpg")}</div>
+          {input("instructor", "Instructor")}
+          {input("level", "Level", "All Levels")}
+          {input("rating", "Rating", "4.5")}
+          {input("ratings_count", "Number of ratings", "22631")}
+          {input("hours", "Total hours", "100")}
+          {input("lectures", "Lectures", "331")}
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-semibold text-slate-600">Preview</p>
+          <UdemyCard
+            course={{
+              ...item,
+              title: item.title || "Course title",
+              rating: item.rating ? Number(item.rating) : null,
+              ratings_count: item.ratings_count ? Number(item.ratings_count) : null,
+              hours: item.hours ? Number(item.hours) : null,
+              lectures: item.lectures ? Number(item.lectures) : null,
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function UdemyField({ value, onChange }: { value: UdemyCourse[]; onChange: (v: UdemyCourse[]) => void }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-xs text-muted">
+        Paste a Udemy course link and click <strong>Fetch details</strong>. If Udemy blocks the request, fill in the fields by hand.
+      </p>
+      {value.map((item, i) => (
+        <UdemyItem
+          key={i}
+          item={item}
+          index={i}
+          total={value.length}
+          onChange={(v) => onChange(value.map((x, j) => (j === i ? v : x)))}
+          onMove={(to) => onChange(move(value, i, to))}
+          onRemove={() => onChange(value.filter((_, j) => j !== i))}
+        />
+      ))}
+      <AddButton onClick={() => onChange([...value, { ...EMPTY_UDEMY }])}>Add Udemy course</AddButton>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Price by learning mode                                              */
+/* ------------------------------------------------------------------ */
+
+type PricingRow = { enabled: boolean; price: string; discount: string };
+export type PricingValue = Record<"online" | "hybrid" | "physical", PricingRow>;
+
+const PRICING_MODES = [
+  { key: "online", label: "Online", hint: "Live classes over video" },
+  { key: "hybrid", label: "Hybrid", hint: "Mix of lab and online" },
+  { key: "physical", label: "Physical", hint: "In-person at the lab" },
+] as const;
+
+export function PricingField({ value, onChange }: { value: Partial<PricingValue> | undefined; onChange: (v: PricingValue) => void }) {
+  const current = Object.fromEntries(
+    PRICING_MODES.map(({ key }) => [key, { enabled: false, price: "", discount: "0", ...(value?.[key] ?? {}) }]),
+  ) as PricingValue;
+  const update = (key: keyof PricingValue, patch: Partial<PricingRow>) => onChange({ ...current, [key]: { ...current[key], ...patch } });
+  const npr = (n: number) => `Rs. ${Math.round(n).toLocaleString("en-IN")}`;
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-line">
+      <div className="hidden grid-cols-[1.3fr_1fr_0.8fr_1fr] gap-3 bg-surface px-4 py-2.5 text-xs font-bold tracking-wider text-muted uppercase sm:grid">
+        <span>Mode</span>
+        <span>Price (NPR)</span>
+        <span>Discount %</span>
+        <span className="text-right">Learner pays</span>
+      </div>
+      {PRICING_MODES.map(({ key, label, hint }) => {
+        const row = current[key];
+        const price = Number(row.price.replace(/,/g, "")) || 0;
+        const discount = Math.min(100, Math.max(0, Number(row.discount) || 0));
+        const final = Math.round((price * (100 - discount)) / 100);
+        return (
+          <div
+            key={key}
+            className={cn(
+              "grid gap-3 border-t border-line px-4 py-3 sm:grid-cols-[1.3fr_1fr_0.8fr_1fr] sm:items-center",
+              !row.enabled && "bg-surface/60",
+            )}
+          >
+            <label className="flex cursor-pointer items-center gap-3">
+              <input type="checkbox" className="size-4 accent-navy" checked={row.enabled} onChange={(e) => update(key, { enabled: e.target.checked })} />
+              <span>
+                <span className="block text-sm font-bold text-ink">{label}</span>
+                <span className="text-xs text-muted">{hint}</span>
+              </span>
+            </label>
+            <input
+              className="field"
+              inputMode="numeric"
+              placeholder="12000"
+              disabled={!row.enabled}
+              value={row.price}
+              onChange={(e) => update(key, { price: e.target.value })}
+              aria-label={`${label} price`}
+            />
+            <div className="relative">
+              <input
+                className="field pr-8"
+                inputMode="decimal"
+                placeholder="0"
+                disabled={!row.enabled}
+                value={row.discount}
+                onChange={(e) => update(key, { discount: e.target.value })}
+                aria-label={`${label} discount percent`}
+              />
+              <span className="absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted">%</span>
+            </div>
+            <div className="text-sm sm:text-right">
+              {!row.enabled ? (
+                <span className="text-muted">Not offered</span>
+              ) : price > 0 ? (
+                <>
+                  <span className="font-extrabold text-navy">{npr(final)}</span>
+                  {discount > 0 && (
+                    <span className="ml-2 text-xs text-muted">
+                      <s>{npr(price)}</s> <span className="font-bold text-emerald-600">{discount}% off</span>
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="text-rose-600">Enter a price</span>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

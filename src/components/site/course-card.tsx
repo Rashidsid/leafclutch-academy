@@ -64,7 +64,14 @@ export function CourseCard({
         <div className="mt-auto space-y-2 pt-1">
           <Meta course={course} rating={rating} />
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-md bg-tint px-2 py-0.5 text-xs font-bold text-navy">{formatNpr(course.fee)}</span>
+            <span className="inline-flex items-baseline gap-1.5 rounded-md bg-tint px-2 py-0.5 text-xs font-bold text-navy">
+              {course.variable_pricing && <span className="font-medium text-muted">From</span>}
+              {formatNpr(course.price_from.final)}
+              {course.price_from.discount > 0 && <s className="font-medium text-muted">{formatNpr(course.price_from.price)}</s>}
+            </span>
+            {course.price_from.discount > 0 && (
+              <span className="rounded-md bg-emerald-600 px-2 py-0.5 text-xs font-extrabold text-white">{course.price_from.discount}% OFF</span>
+            )}
             {course.badge && (
               <span className="inline-flex items-center gap-1 rounded-md bg-rose-50 px-2 py-0.5 text-xs font-semibold text-rose-600">
                 <TrendingUp className="size-3" aria-hidden /> {course.badge === "New" ? "New program" : course.badge === "Popular" ? "Trending right now" : course.badge}

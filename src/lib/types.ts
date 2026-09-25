@@ -15,6 +15,28 @@ export interface CurriculumModule {
   topics?: string[];
 }
 
+/** A Udemy course bundled free (lifetime access) with an academy course. */
+export interface UdemyCourse {
+  url: string;
+  title: string;
+  headline: string | null;
+  image: string | null;
+  instructor: string | null;
+  rating: number | null;
+  ratings_count: number | null;
+  hours: number | null;
+  lectures: number | null;
+  level: string | null;
+}
+
+/** Price and discount (percent) for one learning mode. */
+export interface ModePricing {
+  price: number;
+  discount: number;
+}
+
+export type CoursePricing = Partial<Record<LearningMode, ModePricing>>;
+
 export interface FaqItem {
   question: string;
   answer: string;
@@ -66,6 +88,8 @@ export interface Course {
   duration: string;
   level: string | null;
   modes: LearningMode[];
+  /** Per-mode price and discount (supabase/15mode-pricing.sql). Falls back to `fee` when empty. */
+  pricing: CoursePricing;
   badge: string | null;
   is_ai_integrated: boolean;
   is_featured: boolean;
@@ -82,6 +106,7 @@ export interface Course {
   curriculum: CurriculumModule[];
   faqs: FaqItem[];
   installments: Installment[];
+  udemy_courses: UdemyCourse[];
   seo_title: string | null;
   seo_description: string | null;
   created_at?: string | null;

@@ -18,6 +18,8 @@ Every file is safe to run again. Seed files never overwrite rows you have edited
 | 11 | `11seed-testimonials.sql` | **Sample** testimonials, seeded **unpublished**. Replace them with real reviews |
 | 12 | `12create-admin.sql` | Gives a user access to `/admin` |
 | 13 | `13certificate-and-detailed-curriculum.sql` | Adds the certificate sample image setting and the detailed Lesson → Section → Points curricula. **Replaces** the curriculum of the 12 starter courses |
+| 14 | `14udemy-courses.sql` | Adds free Udemy courses per course (Admin → Courses) and the learner’s Udemy choice on enrollments |
+| 15 | `15mode-pricing.sql` | Separate price and discount for Online, Hybrid and Physical (Admin → Courses → Pricing & learning modes). Existing courses start at their current fee |
 | – | `reset.sql` | **Deletes all tables and data.** Development only |
 
 ## Step by step
