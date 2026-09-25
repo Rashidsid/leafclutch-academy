@@ -10,6 +10,7 @@ import {
   YoutubeIcon,
 } from "@/components/ui/brand-icons";
 import type { MenuCategory } from "./header";
+import { VERIFY_URL } from "@/lib/site";
 import type { Course, SiteSettings } from "@/lib/types";
 
 function Column({ title, children }: { title: string; children: React.ReactNode }) {
@@ -73,7 +74,7 @@ export function Footer({
           <FLink href="/mentors">Mentors</FLink>
           <FLink href="/corporate">For businesses & institutions</FLink>
           <FLink href="/enroll">Enroll</FLink>
-          <FLink href="/verify">Verify certificate</FLink>
+          <FLink href={VERIFY_URL}>Verify certificate</FLink>
           <FLink href="/contact">Contact</FLink>
         </Column>
         <Column title="Get in touch">

@@ -6,7 +6,7 @@ Every file is safe to run again. Seed files never overwrite rows you have edited
 | # | File | What it does |
 |---|------|--------------|
 | 1 | `1schema.sql` | Tables, indexes and `updated_at` triggers |
-| 2 | `2security.sql` | Row Level Security, `is_admin()` and `verify_certificate()` |
+| 2 | `2security.sql` | Row Level Security and `is_admin()` |
 | 3 | `3storage.sql` | Public `media` bucket for images uploaded from the admin |
 | 4 | `4seed-settings.sql` | Contact details, hero text, stats and social links |
 | 5 | `5seed-categories.sql` | Course categories |
@@ -20,6 +20,7 @@ Every file is safe to run again. Seed files never overwrite rows you have edited
 | 13 | `13certificate-and-detailed-curriculum.sql` | Adds the certificate sample image setting and the detailed Lesson → Section → Points curricula. **Replaces** the curriculum of the 12 starter courses |
 | 14 | `14udemy-courses.sql` | Adds free Udemy courses per course (Admin → Courses) and the learner’s Udemy choice on enrollments |
 | 15 | `15mode-pricing.sql` | Separate price and discount for Online, Hybrid and Physical (Admin → Courses → Pricing & learning modes). Existing courses start at their current fee |
+| 16 | `16remove-certificates.sql` | Removes the old certificate records and lookup. Verification now lives at https://verify.leafclutch.com.np |
 | – | `reset.sql` | **Deletes all tables and data.** Development only |
 
 ## Step by step
@@ -43,7 +44,6 @@ Every file is safe to run again. Seed files never overwrite rows you have edited
 
 - Visitors can **read** published courses, mentors, batches, testimonials, FAQs, programs, partners and settings.
 - Visitors can only **submit** enrollments, corporate inquiries and contact messages. They can never read them back, and the database rejects oversized or pre-filled status/notes values.
-- Certificates cannot be listed publicly. `/verify` checks one exact code through `verify_certificate()`.
 - Everything else, including image uploads, needs a signed-in user listed in `public.admins`.
 - The website only uses the public anon key. **Never** put the `service_role` key in the website.
 

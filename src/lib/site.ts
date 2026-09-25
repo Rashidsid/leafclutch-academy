@@ -19,5 +19,8 @@ export const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ] as const;
 
+/** Certificates are verified on Leafclutch’s separate verification site. */
+export const VERIFY_URL = "https://verify.leafclutch.com.np";
+
 /** How often public pages refresh from Supabase (seconds). Admin saves refresh them immediately. */
 export const REVALIDATE_SECONDS = 300;

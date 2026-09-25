@@ -201,11 +201,3 @@ export interface SiteSettings {
   stats: Stat[];
 }
 
-export interface CertificateResult {
-  code: string;
-  student_name: string;
-  course_title: string;
-  mode: string | null;
-  issued_on: string;
-  status: "valid" | "revoked";
-}

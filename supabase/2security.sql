@@ -6,8 +6,6 @@
 --   • Visitors can only INSERT into the inbox tables (enrollments,
 --     corporate_inquiries, contact_messages), never read them back.
 --   • Admins (users listed in public.admins) can do everything.
---   • Certificates are not listable; they are checked by exact code
---     through verify_certificate().
 -- Safe to re-run.
 -- =====================================================================
 
@@ -35,7 +33,7 @@ declare t text;
 begin
   foreach t in array array[
     'site_settings','categories','courses','mentors','course_mentors','batches','testimonials',
-    'faqs','programs','partners','certificates','enrollments','corporate_inquiries',
+    'faqs','programs','partners','enrollments','corporate_inquiries',
     'contact_messages','admins'
   ]
   loop
@@ -55,7 +53,7 @@ begin
     where schemaname = 'public'
       and tablename in (
         'site_settings','categories','courses','mentors','course_mentors','batches','testimonials',
-        'faqs','programs','partners','certificates','enrollments','corporate_inquiries',
+        'faqs','programs','partners','enrollments','corporate_inquiries',
         'contact_messages','admins'
       )
   loop
@@ -117,35 +115,6 @@ begin
   end loop;
 end;
 $$;
-
--- ---------------------------------------------------------------------
--- Certificates: admin only (public checks go through verify_certificate)
--- ---------------------------------------------------------------------
-create policy "admins manage certificates" on public.certificates
-  for all using (public.is_admin()) with check (public.is_admin());
-
-create or replace function public.verify_certificate(p_code text)
-returns table (
-  code text,
-  student_name text,
-  course_title text,
-  mode text,
-  issued_on date,
-  status text
-)
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select c.code, c.student_name, c.course_title, c.mode, c.issued_on, c.status
-  from public.certificates c
-  where upper(c.code) = upper(trim(p_code))
-  limit 1;
-$$;
-
-revoke all on function public.verify_certificate(text) from public;
-grant execute on function public.verify_certificate(text) to anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- Inbox tables: anyone may submit, only admins may read/update/delete.

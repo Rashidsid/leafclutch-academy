@@ -491,51 +491,6 @@ const partners: ContentResource = {
   ],
 };
 
-const certificates: ContentResource = {
-  kind: "content",
-  key: "certificates",
-  table: "certificates",
-  label: "Certificates",
-  singular: "Certificate",
-  description: "Issued certificates that anyone can verify by code on /verify.",
-  icon: "award",
-  select: "*",
-  order: [{ column: "issued_on", ascending: false }],
-  titleField: "student_name",
-  searchFields: ["code", "student_name", "course_title"],
-  columns: [
-    { name: "code", label: "Code", kind: "badge" },
-    { name: "student_name", label: "Student" },
-    { name: "course_title", label: "Course" },
-    { name: "issued_on", label: "Issued", kind: "date" },
-    { name: "status", label: "Status", kind: "badge" },
-  ],
-  groups: [
-    {
-      title: "Certificate",
-      fields: [
-        { name: "code", label: "Certificate code", type: "text", required: true, placeholder: "LCA-2026-0001", help: "Printed on the certificate. Must be unique." },
-        { name: "student_name", label: "Student name", type: "text", required: true },
-        { name: "course_id", label: "Course", type: "select", optionsFrom: "courses" },
-        { name: "course_title", label: "Course title (as printed)", type: "text", help: "Leave blank to use the selected course's title." },
-        { name: "mode", label: "Learning mode", type: "select", options: MODE_OPTIONS },
-        { name: "issued_on", label: "Issued on", type: "date", required: true },
-        {
-          name: "status",
-          label: "Status",
-          type: "select",
-          required: true,
-          options: [
-            { value: "valid", label: "Valid" },
-            { value: "revoked", label: "Revoked" },
-          ],
-        },
-        { name: "remarks", label: "Internal remarks", type: "textarea", rows: 2, wide: true },
-      ],
-    },
-  ],
-};
-
 /* ------------------------------------------------------------------ */
 
 const enrollments: InboxResource = {
@@ -688,7 +643,6 @@ export const RESOURCES: Resource[] = [
   faqs,
   programs,
   partners,
-  certificates,
   enrollments,
   corporateInquiries,
   messages,
@@ -698,7 +652,6 @@ export const NAV_GROUPS: { title: string; keys: string[] }[] = [
   { title: "Catalogue", keys: ["courses", "categories", "batches", "mentors"] },
   { title: "Content", keys: ["testimonials", "faqs", "programs", "partners"] },
   { title: "Inbox", keys: ["enrollments", "corporate-inquiries", "messages"] },
-  { title: "Records", keys: ["certificates"] },
 ];
 
 export function getResource(key: string) {

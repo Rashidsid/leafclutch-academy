@@ -25,6 +25,7 @@ import {
   ratingsByCourse,
 } from "@/lib/data";
 import { IconByName } from "@/lib/icons";
+import { VERIFY_URL } from "@/lib/site";
 
 export const revalidate = 300;
 
@@ -157,7 +158,7 @@ export default async function HomePage() {
           {[
             { href: "/courses", title: "Launch a new career", icon: Rocket },
             { href: "/corporate", title: "Train your team or campus", icon: Building2 },
-            { href: "/verify", title: "Verify a certificate", icon: Award },
+            { href: VERIFY_URL, title: "Verify a certificate", icon: Award },
           ].map((a, i) => (
             <Reveal key={a.title} delay={i * 120}>
             <Link

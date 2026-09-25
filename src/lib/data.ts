@@ -6,7 +6,6 @@ import { getPublicClient } from "@/lib/supabase/public";
 import type {
   Batch,
   Category,
-  CertificateResult,
   Course,
   Faq,
   Mentor,
@@ -176,16 +175,6 @@ export const getPartners = cache(async (): Promise<Partner[]> => {
   if (error) logError("partners", error);
   return (data as Partner[]) ?? [];
 });
-
-export async function verifyCertificate(code: string): Promise<CertificateResult | null> {
-  if (!isSupabaseConfigured || !code.trim()) return null;
-  const { data, error } = await getPublicClient().rpc("verify_certificate", { p_code: code.trim() });
-  if (error) {
-    logError("certificate", error);
-    return null;
-  }
-  return ((data as CertificateResult[]) ?? [])[0] ?? null;
-}
 
 /** Average rating and count from published testimonials, per course id. */
 export function ratingsByCourse(testimonials: Testimonial[]) {

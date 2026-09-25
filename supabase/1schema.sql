@@ -193,21 +193,6 @@ create table if not exists public.partners (
   updated_at   timestamptz not null default now()
 );
 
--- Certificates that anyone can verify by code (read through verify_certificate())
-create table if not exists public.certificates (
-  id           uuid primary key default gen_random_uuid(),
-  code         text not null unique,
-  student_name text not null,
-  course_id    uuid references public.courses(id) on delete set null,
-  course_title text not null,
-  mode         text check (mode is null or mode in ('online','hybrid','physical')),
-  issued_on    date not null default current_date,
-  status       text not null default 'valid' check (status in ('valid','revoked')),
-  remarks      text,
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
-);
-
 -- ---------------------------------------------------------------------
 -- Inbox (submitted from the public site)
 -- ---------------------------------------------------------------------
@@ -278,7 +263,7 @@ declare t text;
 begin
   foreach t in array array[
     'site_settings','categories','courses','mentors','batches','testimonials','faqs',
-    'programs','partners','certificates','enrollments','corporate_inquiries','contact_messages'
+    'programs','partners','enrollments','corporate_inquiries','contact_messages'
   ]
   loop
     execute format('drop trigger if exists %I_updated_at on public.%I', t, t);

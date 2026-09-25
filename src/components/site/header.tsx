@@ -10,6 +10,7 @@ import { CourseCover } from "./course-cover";
 import { CourseRow } from "./course-card";
 import { IconByName } from "@/lib/icons";
 import { cn } from "@/lib/cn";
+import { VERIFY_URL } from "@/lib/site";
 import type { CourseLite } from "@/lib/catalog";
 
 export interface MenuCategory {
@@ -27,10 +28,10 @@ export interface HeaderMenu {
 }
 
 const AUDIENCE_TABS = [
-  { href: "/", label: "For Individuals", match: (p: string) => !p.startsWith("/corporate") && !p.startsWith("/verify") },
+  { href: "/", label: "For Individuals", match: (p: string) => !p.startsWith("/corporate") },
   { href: "/corporate", label: "For Businesses", match: (p: string) => p.startsWith("/corporate") },
   { href: "/corporate#programs", label: "For Schools & Colleges", match: () => false },
-  { href: "/verify", label: "Verify Certificate", match: (p: string) => p.startsWith("/verify") },
+  { href: VERIFY_URL, label: "Verify Certificate", match: () => false },
 ];
 
 const q = (s: string) => `/courses?q=${encodeURIComponent(s)}`;
@@ -305,7 +306,7 @@ export function Header({ menu, phone }: { menu: HeaderMenu; phone: string | null
                 </MegaColumn>
                 <MegaColumn title="For organisations">
                   <MegaLink href="/corporate">Corporate & institutions</MegaLink>
-                  <MegaLink href="/verify">Verify a certificate</MegaLink>
+                  <MegaLink href={VERIFY_URL}>Verify a certificate</MegaLink>
                 </MegaColumn>
               </div>
             </div>
@@ -386,7 +387,7 @@ export function Header({ menu, phone }: { menu: HeaderMenu; phone: string | null
                 ["/mentors", "Mentors"],
                 ["/about", "About us"],
                 ["/contact", "Contact"],
-                ["/verify", "Verify certificate"],
+                [VERIFY_URL, "Verify certificate"],
               ].map(([href, label]) => (
                 <Link
                   key={href}

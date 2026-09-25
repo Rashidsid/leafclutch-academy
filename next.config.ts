@@ -4,6 +4,10 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ protocol: "https", hostname: "*.supabase.co" }],
   },
+  async redirects() {
+    // Certificate verification lives on its own site
+    return [{ source: "/verify", destination: "https://verify.leafclutch.com.np", permanent: true }];
+  },
   async headers() {
     return [
       {

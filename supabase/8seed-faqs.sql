@@ -37,7 +37,7 @@ where not exists (select 1 from public.faqs x where x.question = r.question);
 -- FAQ 6 (career)
 insert into public.faqs (question, answer, topic, sort_order)
 select r.question, r.answer, r.topic, r.sort_order
-from jsonb_populate_record(null::public.faqs, convert_from(decode('eyJxdWVzdGlvbiI6IldpbGwgSSByZWNlaXZlIGEgY2VydGlmaWNhdGU/IiwiYW5zd2VyIjoiWWVzLiBZb3UgcmVjZWl2ZSBhIGNvbXBsZXRpb24gY2VydGlmaWNhdGUgd2l0aCBhIHVuaXF1ZSBjb2RlIHRoYXQgZW1wbG95ZXJzIGNhbiBjaGVjayBvbiBvdXIgVmVyaWZ5IENlcnRpZmljYXRlIHBhZ2UuIiwidG9waWMiOiJjYXJlZXIiLCJzb3J0X29yZGVyIjo2fQ==', 'base64'), 'UTF8')::jsonb) r
+from jsonb_populate_record(null::public.faqs, convert_from(decode('eyJxdWVzdGlvbiI6IldpbGwgSSByZWNlaXZlIGEgY2VydGlmaWNhdGU/IiwiYW5zd2VyIjoiWWVzLiBZb3UgcmVjZWl2ZSBhIGNvbXBsZXRpb24gY2VydGlmaWNhdGUgd2l0aCBhIHVuaXF1ZSBjb2RlIHRoYXQgZW1wbG95ZXJzIGNhbiBjaGVjayBhdCB2ZXJpZnkubGVhZmNsdXRjaC5jb20ubnAuIiwidG9waWMiOiJjYXJlZXIiLCJzb3J0X29yZGVyIjo2fQ==', 'base64'), 'UTF8')::jsonb) r
 where not exists (select 1 from public.faqs x where x.question = r.question);
 
 -- FAQ 7 (learning)

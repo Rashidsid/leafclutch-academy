@@ -31,7 +31,7 @@ import { cn } from "@/lib/cn";
 import { getBatches, getCourseBySlug, getCourses, getSettings, getTestimonials, ratingsByCourse } from "@/lib/data";
 import { BATCH_STATUS, formatDate, formatNpr, initials, MODE_DETAILS, MODE_LABELS } from "@/lib/format";
 import { hasVariablePricing, lowestPrice, modePrices } from "@/lib/pricing";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, VERIFY_URL } from "@/lib/site";
 
 export const revalidate = 300;
 
@@ -99,7 +99,7 @@ export default async function CoursePage({ params }: { params: Params }) {
   const pdfHref = `/courses/${course.slug}/syllabus`;
   const modes = course.modes.map((m) => MODE_LABELS[m]);
   const modeText = modes.length > 1 ? `${modes.slice(0, -1).join(", ")} & ${modes.at(-1)}` : (modes[0] ?? "");
-  const verifyUrl = `${SITE_URL.replace(/^https?:\/\//, "")}/verify`;
+  const verifyUrl = VERIFY_URL.replace(/^https?:\/\//, "");
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -579,9 +579,9 @@ export default async function CoursePage({ params }: { params: Params }) {
             </p>
             <p className="mt-5 text-[15px] text-slate-700">
               Already earned a certificate?{" "}
-              <Link href="/verify" className="font-bold text-navy underline underline-offset-4 hover:text-sky">
+              <a href={VERIFY_URL} target="_blank" rel="noopener noreferrer" className="font-bold text-navy underline underline-offset-4 hover:text-sky">
                 Verify it here
-              </Link>
+              </a>
             </p>
           </Reveal>
           <Reveal variant="zoom" delay={150}>

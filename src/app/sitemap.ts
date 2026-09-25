@@ -6,7 +6,7 @@ export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const courses = await getCourses();
-  const pages = ["", "/courses", "/schedule", "/corporate", "/mentors", "/about", "/contact", "/enroll", "/verify"];
+  const pages = ["", "/courses", "/schedule", "/corporate", "/mentors", "/about", "/contact", "/enroll"];
   return [
     ...pages.map((p) => ({ url: `${SITE_URL}${p}`, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.7 })),
     ...courses.map((c) => ({

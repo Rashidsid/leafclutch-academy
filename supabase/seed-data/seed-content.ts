@@ -636,7 +636,7 @@ export const seedFaqs: SeedFaq[] = [
   { topic: "learning", question: "What is the difference between Online, Hybrid and Physical classes?", answer: "Online classes are live and interactive over video. Physical classes happen in person at our lab in Siddharthanagar. Hybrid lets you mix both, attending in person when you can and joining live online when you cannot." },
   { topic: "learning", question: "Will I get recordings of the classes?", answer: "Yes. Every live session is recorded and shared with your batch, so you can revise any topic or catch up on a class you missed." },
   { topic: "career", question: "What is the internship pathway?", answer: "After the three-month training, your projects are evaluated. Learners who meet the standard are promoted to an internship where they work on real projects with mentor supervision." },
-  { topic: "career", question: "Will I receive a certificate?", answer: "Yes. You receive a completion certificate with a unique code that employers can check on our Verify Certificate page." },
+  { topic: "career", question: "Will I receive a certificate?", answer: "Yes. You receive a completion certificate with a unique code that employers can check at verify.leafclutch.com.np." },
   { topic: "learning", question: "What do I need to join?", answer: "A laptop and a stable internet connection for online or hybrid learning. Each course page lists any specific requirements." },
   { topic: "general", question: "Do you run programs for schools, colleges and companies?", answer: "Yes. We run corporate upskilling, school and college campaigns, bootcamps and workshops. Visit the Corporate & Institutions page to request a proposal." },
 ];

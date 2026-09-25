@@ -99,8 +99,6 @@ export function defaultsFor(key: string): Row {
       return { ...base, topic: "general" };
     case "programs":
       return { ...base, audience: "corporate", highlights: [], icon: "briefcase" };
-    case "certificates":
-      return { status: "valid", issued_on: today, code: `LCA-${today.slice(0, 4)}-` };
     default:
       return base;
   }

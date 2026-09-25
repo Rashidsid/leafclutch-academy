@@ -75,16 +75,6 @@ export async function saveResource(key: string, id: string | null, values: Recor
       row.fee = lowestPrice({ fee: 0, modes: row.modes as LearningMode[], pricing }).final;
     }
 
-    // Certificates: default the printed course title to the selected course
-    if (resource.key === "certificates" && !row.course_title && row.course_id) {
-      const { data } = await supabase.from("courses").select("title").eq("id", row.course_id).maybeSingle();
-      row.course_title = data?.title ?? null;
-    }
-    if (resource.key === "certificates") {
-      if (!row.course_title) return { ok: false, error: "Choose a course or enter the course title." };
-      row.code = String(row.code).toUpperCase();
-    }
-
     const query = id
       ? supabase.from(resource.table).update(row).eq("id", id).select("id").single()
       : supabase.from(resource.table).insert(row).select("id").single();
